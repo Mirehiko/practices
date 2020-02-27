@@ -142,7 +142,8 @@ const routes = {
   },
   src: {
     styles: [`${src_static}**/*.scss`, `${src_static}**/*.sass`],
-    scripts: [`${src_static}**/*.js`, `${tmp_dir}/**/*.js`],
+    // scripts: [`${src_static}**/*.js`, `${tmp_dir}/**/*.js`],
+    scripts: [`${src_static}**/*.js`, `!${tmp_dir}/**/*.js`],
     // scripts:     `${ src_static }js/**/*.js`,
     scripts_tmp: `${tmp_dir}/js/**/*.js`,
     images: `${src_static}images/**/*`,
@@ -380,7 +381,9 @@ function styleLint() {
 // Таск на конкатенацию js файлов
 function makeJSFiles() {
   const filtered = filter([`${src_static}js/**/*.js`]);
-  return gulp.src([`${src_static}**/*.js`], { allowEmpty: true })
+  
+  return gulp.src(routes.src.scripts, { allowEmpty: true })
+  // return gulp.src([`${src_static}**/*.js`], { allowEmpty: true })
     .pipe(filtered)
     .pipe(logger({
       showChange: true,
@@ -1062,11 +1065,19 @@ function browser() {
   const html_watcher = gulp.watch(`${source_dir}**/*.pug`).on('change', function(file) {
     buildHtml.call(this, {path:file});
   });
+
+  // const js_watcher = gulp.watch(routes.src.scripts).on('change', function(file){
+
+    const js_watcher = gulp.watch(routes.src.scripts, makeJSFiles);
+    const js_watcher2 = gulp.watch(routes.src.scripts_tmp, buildScripts);
+  // });
+
   const css_watcher = gulp.watch(routes.src.styles, buildStyles);
-  const js_watcher = gulp.watch(routes.src.scripts, makeJSFiles);
+  // const js_watcher = gulp.watch(routes.src.scripts, makeJSFiles, buildScripts);
   const watcher = gulp.watch(files).on('change', browserSync.reload);
   clearDeletedCSS(css_watcher);
   clearDeletedJS(js_watcher);
+  clearDeletedJS(js_watcher2);
 }
 
 //------------------------------------------------------------------------------
