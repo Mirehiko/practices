@@ -1,0 +1,172 @@
+.preloader {
+  display: flex;
+  justify-content: center;
+  height: inherit;
+  font-family: 'Lucida Grande', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: #333;
+  text-align: center;
+  vertical-align: middle;
+  background-color: #fff;
+
+  &[state='hidden'] {
+    display: none;
+  }
+}
+
+.cssload-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cssload-loading i {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  line-height: 20px;
+  vertical-align: middle;
+  background: rgb(16, 174, 158);
+  border-radius: 50%;
+}
+
+.cssload-loading i:first-child {
+  -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=0)';
+  opacity: 0;
+  -o-transform: translate(-16px);
+  -ms-transform: translate(-16px);
+  -webkit-transform: translate(-16px);
+  -moz-transform: translate(-16px);
+  transform: translate(-16px);
+  -o-animation: cssload-loading-ani2 0.58s linear infinite;
+  -ms-animation: cssload-loading-ani2 0.58s linear infinite;
+  -webkit-animation: cssload-loading-ani2 0.58s linear infinite;
+  -moz-animation: cssload-loading-ani2 0.58s linear infinite;
+  animation: cssload-loading-ani2 0.58s linear infinite;
+}
+
+.cssload-loading i:nth-child(2),
+.cssload-loading i:nth-child(3) {
+  -o-animation: cssload-loading-ani3 0.58s linear infinite;
+  -ms-animation: cssload-loading-ani3 0.58s linear infinite;
+  -webkit-animation: cssload-loading-ani3 0.58s linear infinite;
+  -moz-animation: cssload-loading-ani3 0.58s linear infinite;
+  animation: cssload-loading-ani3 0.58s linear infinite;
+}
+
+.cssload-loading i:last-child {
+  -o-animation: cssload-loading-ani1 0.58s linear infinite;
+  -ms-animation: cssload-loading-ani1 0.58s linear infinite;
+  -webkit-animation: cssload-loading-ani1 0.58s linear infinite;
+  -moz-animation: cssload-loading-ani1 0.58s linear infinite;
+  animation: cssload-loading-ani1 0.58s linear infinite;
+}
+
+@keyframes cssload-loading-ani1 {
+  100% {
+    -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=0)';
+    opacity: 0;
+    -webkit-transform: translate(33px);
+    transform: translate(33px);
+  }
+}
+
+@-o-keyframes cssload-loading-ani1 {
+  100% {
+    opacity: 0;
+    -o-transform: translate(33px);
+  }
+}
+
+@-ms-keyframes cssload-loading-ani1 {
+  100% {
+    opacity: 0;
+    -ms-transform: translate(33px);
+  }
+}
+
+@-webkit-keyframes cssload-loading-ani1 {
+  100% {
+    -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=0)';
+    opacity: 0;
+    -webkit-transform: translate(33px);
+  }
+}
+
+@-moz-keyframes cssload-loading-ani1 {
+  100% {
+    opacity: 0;
+    -moz-transform: translate(33px);
+  }
+}
+
+@keyframes cssload-loading-ani2 {
+  100% {
+    -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=100)';
+    opacity: 1;
+    -webkit-transform: translate(16px);
+    transform: translate(16px);
+  }
+}
+
+@-o-keyframes cssload-loading-ani2 {
+  100% {
+    opacity: 1;
+    -o-transform: translate(16px);
+  }
+}
+
+@-ms-keyframes cssload-loading-ani2 {
+  100% {
+    opacity: 1;
+    -ms-transform: translate(16px);
+  }
+}
+
+@-webkit-keyframes cssload-loading-ani2 {
+  100% {
+    -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=100)';
+    opacity: 1;
+    -webkit-transform: translate(16px);
+  }
+}
+
+@-moz-keyframes cssload-loading-ani2 {
+  100% {
+    opacity: 1;
+    -moz-transform: translate(16px);
+  }
+}
+
+@keyframes cssload-loading-ani3 {
+  100% {
+    -webkit-transform: translate(16px);
+    transform: translate(16px);
+  }
+}
+
+@-o-keyframes cssload-loading-ani3 {
+  100% {
+    -o-transform: translate(16px);
+  }
+}
+
+@-ms-keyframes cssload-loading-ani3 {
+  100% {
+    -ms-transform: translate(16px);
+  }
+}
+
+@-webkit-keyframes cssload-loading-ani3 {
+  100% {
+    -webkit-transform: translate(16px);
+  }
+}
+
+@-moz-keyframes cssload-loading-ani3 {
+  100% {
+    -moz-transform: translate(16px);
+  }
+}
+
+/* /preloader */

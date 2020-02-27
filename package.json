@@ -5,10 +5,10 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "lint": "eslint ./app/src/**/*.js",
-    "lint:fix": "eslint ./app/src/**/*.js --fix --color",
-    "csslint": "stylelint ./app/src/**/*.scss ./app/src/**/*.css",
-    "csslint:fix": "stylelint ./app/src/**/*.scss ./app/src/**/*.css --fix --color",
+    "jslint": "eslint ./app/src --ext .js",
+    "jslint:fix": "eslint ./app/src --ext .js --fix --color",
+    "csslint": "stylelint ./app/src/**/*.scss",
+    "csslint:fix": "stylelint ./app/src/**/*.scss --fix --color",
     "tpl": "pug ./app/src/templates/*.pug --out ./app/build --pretty",
     "bts": "tsc ./app/src/**/*.ts --outDir ./app/src/js",
     "dev": "webpack --config development-config.js",
@@ -125,7 +125,7 @@
       "git add"
     ],
     "*.js": [
-      "npm run lint:fix",
+      "npm run jslint:fix",
       "git add"
     ]
   },

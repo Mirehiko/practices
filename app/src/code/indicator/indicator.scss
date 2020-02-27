@@ -1,0 +1,34 @@
+.indicatorBlock {
+  position: relative;
+  -webkit-transition: all 0.5s;
+  -o-transition: all 0.5s;
+  transition: all 0.5s;
+}
+
+.indicatorBox {
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 500;
+  font-size: 20px;
+  color: #fff;
+  text-align: center;
+  background-color: #2d2f38;
+
+  &.indicatorUp {
+    top: 0;
+    display: none;
+  }
+
+  &.indicatorDown {
+    bottom: 0;
+  }
+
+  &[state='visible'] {
+    display: block;
+  }
+
+  &[state='hidden'] {
+    display: none;
+  }
+}

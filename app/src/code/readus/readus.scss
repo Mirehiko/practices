@@ -1,0 +1,271 @@
+// Social colors
+$backvk: #45668e; // vkontakte color
+$backfb: #3b5ca2; // facebook color
+$backok: #ed812b; // odnoklassniki color ed802b
+$backtw: #1da1f2; // twitter color
+$backtg: #0d88cc; // telegram color
+$backtam: #697cfe; // tamtam color
+$backinst: #e1306c; // instagram color
+
+.readus-banner {
+  margin: 15px 0;
+  margin: 0 auto;
+}
+
+.readus-title {
+  margin-bottom: 10px;
+  font-size: 24px;
+  text-align: center;
+}
+
+.readus-title__wr {
+  position: relative;
+  display: inline-block;
+  padding: 10px 30px;
+  line-height: 28px;
+  color: #222;
+
+  &.fb {
+    background-color: #ddefff;
+    border-top: 2px solid $backfb;
+
+    strong {
+      color: $backfb;
+    }
+  }
+
+  &.vk {
+    background-color: #e0f0ff;
+    border-top: 2px solid $backvk;
+
+    strong {
+      color: $backvk;
+    }
+  }
+
+  &.ok {
+    background-color: #fce6cc;
+    border-top: 2px solid $backok;
+
+    strong {
+      color: $backok;
+    }
+  }
+
+  &.tw {
+    background-color: #ceeafc;
+    border-top: 2px solid $backtw;
+
+    strong {
+      color: $backtw;
+    }
+  }
+
+  &.tg {
+    background-color: #cbeafc;
+    border-top: 2px solid $backtg;
+
+    strong {
+      color: $backtg;
+    }
+  }
+
+  &.tamtam {
+    background-color: #dfe3ff;
+    border-top: 2px solid $backtam;
+
+    strong {
+      color: $backtam;
+    }
+  }
+
+  &.inst {
+    background-color: #f6d8e2;
+    border-top: 2px solid $backinst;
+
+    strong {
+      color: $backinst;
+    }
+  }
+
+  &:hover,
+  &:focus {
+    color: #222;
+  }
+}
+
+.readus-title__icon {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  font-size: 34px;
+  line-height: 50px;
+  color: #fff;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 6px;
+}
+
+.readus-title__text {
+  display: inline-block;
+  padding-left: 20px;
+  line-height: 50px;
+  vertical-align: middle;
+}
+
+.readus-text {
+  display: inline-block;
+  line-height: 26px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.readus-list {
+  font-size: 0;
+  text-align: center;
+}
+
+.readus-list__item {
+  display: inline-block;
+  padding: 0 10px;
+  margin-bottom: 10px;
+  font-size: initial;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.readus-btn {
+  display: block;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  font-size: 20px;
+  line-height: 50px;
+  color: #829eb2;
+  vertical-align: middle;
+  border: none;
+  border: 2px solid #829eb2;
+  border-radius: 50%;
+  transition: all 0.3s;
+
+  &:hover,
+  &:focus {
+    color: #fff;
+    border-color: transparent;
+  }
+}
+
+.readus-btn.fb:hover,
+.readus-btn.fb:focus,
+.readus-title__icon.fb {
+  background-color: $backfb;
+}
+
+.readus-btn.vk:hover,
+.readus-btn.vk:focus,
+.readus-title__icon.vk {
+  background-color: $backvk;
+}
+
+.readus-btn.ok:hover,
+.readus-btn.ok:focus,
+.readus-title__icon.ok {
+  background-color: $backok;
+}
+
+.readus-btn.tw:hover,
+.readus-btn.tw:focus,
+.readus-title__icon.tw {
+  background-color: $backtw;
+}
+
+.readus-btn.tg:hover,
+.readus-btn.tg:focus,
+.readus-title__icon.tg {
+  background-color: $backtg;
+}
+
+.readus-btn.tamtam {
+  svg {
+    display: inline-block;
+    height: 22px;
+    margin-top: -7px;
+    vertical-align: middle;
+
+    path {
+      fill: #829eb2;
+    }
+  }
+
+  &:hover path,
+  &:focus path {
+    fill: #fff;
+  }
+}
+
+.readus-btn.tamtam:hover,
+.readus-btn.tamtam:focus,
+.readus-title__icon.tamtam {
+  background-color: $backtam;
+}
+
+.readus-btn.inst:hover,
+.readus-btn.inst:focus,
+.readus-title__icon.inst {
+  background-color: $backinst;
+}
+
+.readus-title__icon.tamtam svg {
+  display: inline-block;
+  height: 38px;
+  margin-top: -4px;
+  line-height: 50px;
+  vertical-align: middle;
+}
+
+/* ---------------------------------------------- */
+
+@media screen and (min-width: 0) {
+  .readus-list {
+    display: none;
+  }
+
+  .readus-title__wr {
+    padding: 10px 15px;
+  }
+
+  .readus-title__icon {
+    display: block;
+    margin: 0 auto 10px;
+  }
+
+  .readus-title__text {
+    padding: 0;
+    font-size: 18px;
+    line-height: 20px;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .readus-list {
+    display: block;
+  }
+
+  .readus-title__wr {
+    padding: 10px 30px;
+  }
+
+  .readus-title__icon {
+    display: inline-block;
+    float: left;
+    margin: 0;
+  }
+
+  .readus-title__text {
+    display: block;
+    min-height: 50px;
+    padding-left: 70px;
+    font-size: 24px;
+    line-height: 50px;
+  }
+}
