@@ -136,6 +136,7 @@ const routes = {
     scripts_tmp: `${tmp_dir}/js/`,
     styles:	`${dest_static}css/`,
     images: `${dest_static}images/`,
+    code: `${src_static}code/`
   },
   src: {
     styles: [`${src_static}**/*.scss`, `${src_static}**/*.sass`],
@@ -143,10 +144,12 @@ const routes = {
     // scripts:     `${ src_static }js/**/*.js`,
     scripts_tmp: `${tmp_dir}/js/**/*.js`,
     images: `${src_static}images/**/*`,
+    code: [`${src_static}code/**/*.scss`, `${src_static}code/**/*.sass`],
   },
   cssFilter: [
     `${src_static}**/*.scss`, 
     `${src_static}**/*.sass`, 
+    `!${src_static}code/**`,
     `!${src_static}components/**`,
     `!${src_static}modules/**`
   ],
@@ -229,9 +232,25 @@ const isProduction = mode.production();
 
 
 function buildStyles() {
+  let params = process.argv.splice(4);
+  let sourcePath = routes.src.styles;
+  let defFilter = routes.cssFilter;
+  let buildPath = routes.build.styles;
+  let message = `Params not set. Use default build params`;
+  let relpath = '';
+
+  if (params.length) {
+    sourcePath = routes.src.code;
+    defFilter = routes.src.code;
+    buildPath = routes.build.code
+    relpath = { includeParents: -1};
+    message = `Applying build params`;
+  }
+  console.log(`[Build params] ${message} (source path:${sourcePath}, dest path:${buildPath}, filter:${defFilter})`);
+
   if (isProduction) {
-    const filtered = filter(routes.cssFilter);
-    return gulp.src(routes.src.styles, { allowEmpty: true })
+    const filtered = filter(defFilter);
+    return gulp.src(sourcePath, { allowEmpty: true})
       .pipe(cache('files_changes'))
       .pipe(dependents())
       .pipe(logger({
@@ -245,52 +264,52 @@ function buildStyles() {
         remove: false,
         cascade: false,
       }))
-      .pipe(flatten())
-      .pipe(gulp.dest(routes.build.styles))
+      .pipe(flatten(relpath))
+      .pipe(gulp.dest(buildPath))
       .pipe(cleanCSS({
         compatibility: 'ie8',
       })) // минификация css
       .pipe(rename((src_dir) => {
         src_dir.basename += '.min';
       }))
-      .pipe(gulp.dest(routes.build.styles))
+      .pipe(gulp.dest(buildPath))
       .pipe(touch())
       .pipe(size())
       .pipe(browserSync.stream());
   }
-
-  // let filtered = filter(routes.cssFilter);
-  return gulp.src(routes.src.styles, { allowEmpty: true })
-  // .pipe(stripDebug())
-    .pipe(cache('files_changes')) // Кэшируем для определения только измененных файлов
-    .pipe(dependents()) // если есть связанные файлы, то меняем и их
-    .pipe(logger({
-      showChange: true,
-      before: '[development] Starting dev build css-files...',
-      after: '[development] Building dev css-files complete.',
-    })) // логируем изменяемые файлы
-  // .pipe(filtered)
-    .pipe(sourcemaps.init())
-    .pipe(sass()) // переводим в css
-    .pipe(autoprefixer({
-      remove: false,
-      cascade: false,
-    })) // добавляем префиксы
-    .pipe(flatten()) // пишем файлы без сохранения структуры папок
-    .pipe(sourcemaps.write('./')) // sourcemap-ы для .css файлов
-    .pipe(gulp.dest(routes.build.styles))
-  // // .. далее минифицируем и добавляем sourcemap-ы для .min.css
-    .pipe(filter('**/*.css'))
-    .pipe(cleanCSS({
-      compatibility: 'ie8', // default
-    })) // минификация css
-    .pipe(rename((src_dir) => {
-      src_dir.basename += '.min'; // до расширения файла
-    }))
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest(routes.build.styles)) // выходная папка
-    .pipe(touch())
-    .pipe(browserSync.stream());
+  else {
+    return gulp.src(sourcePath, { allowEmpty: true })
+      // .pipe(stripDebug())
+      .pipe(cache('files_changes')) // Кэшируем для определения только измененных файлов
+      .pipe(dependents()) // если есть связанные файлы, то меняем и их
+      .pipe(logger({
+        showChange: true,
+        before: '[development] Starting dev build css-files...',
+        after: '[development] Building dev css-files complete.',
+      })) // логируем изменяемые файлы
+      // .pipe(filtered)
+      .pipe(sourcemaps.init())
+      .pipe(sass()) // переводим в css
+      .pipe(autoprefixer({
+        remove: false,
+        cascade: false,
+      })) // добавляем префиксы
+      .pipe(flatten(relpath)) // пишем файлы без сохранения структуры папок
+      .pipe(sourcemaps.write('./')) // sourcemap-ы для .css файлов
+      .pipe(gulp.dest(buildPath))
+      // .. далее минифицируем и добавляем sourcemap-ы для .min.css
+      .pipe(filter('**/*.css'))
+      .pipe(cleanCSS({
+        compatibility: 'ie8', // default
+      })) // минификация css
+      .pipe(rename((src_dir) => {
+        src_dir.basename += '.min'; // до расширения файла
+      }))
+      .pipe(sourcemaps.write('./'))
+      .pipe(gulp.dest(buildPath)) // выходная папка
+      .pipe(touch())
+      .pipe(browserSync.stream());
+  }
 }
 
 function watchCSS() {
@@ -1055,6 +1074,8 @@ function homeBase() {
 }
 
 
+
+
 //------------------------------------------------------------------------------
 
 
@@ -1192,6 +1213,15 @@ gulp.task('js-check', checkJS);
 gulp.task('js-quality', qualityJS);
 gulp.task('js-searchDuplicates', searchDuplicates);
 
+
+// function mytask() {
+//   return new Promise(((resolve, reject) => {
+//     console.log(process.argv);
+//     console.log(su)
+//     resolve();
+//   }));
+// }
+// exports.mytask = mytask;
 
 // gulp.task('pre-build', gulp.series(
 //  gulp.parallel(stylesProd, optimizeImages, makeJSFiles),

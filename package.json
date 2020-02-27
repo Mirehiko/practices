@@ -12,9 +12,10 @@
     "tpl": "pug ./app/src/templates/*.pug --out ./app/build --pretty",
     "bts": "tsc ./app/src/**/*.ts --outDir ./app/src/js",
     "dev": "webpack --config development-config.js",
-    "build": "webpack --config production-config.js",
+    "buildjs": "webpack --config production-config.js",
     "watch": "webpack --config webpack.config.js --watch",
-    "toes5": "babel ./app/src/ --out-dir ./app/dist"
+    "toes5": "babel ./app/src/ --out-dir ./app/dist",
+    "build": "npm run tpl && gulp build"
   },
   "browserslist": [
     ">0.1%",
