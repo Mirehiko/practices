@@ -1,0 +1,64 @@
+{
+    "env": {
+        "browser": true,
+        "node": true,
+        "es6": true,
+        "jquery": true
+    },
+    "extends": [
+        "airbnb/base",
+        "eslint:recommended",
+        "jquery",
+        "plugin:import/errors",
+        "plugin:import/warnings"
+    ],
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly",
+        "jquery": false,
+        "Fixation": false
+    },
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        },
+        "ecmaVersion": 2018
+    },
+    "plugins": ["import", "jsx-a11y", "react", "prettier", "jquery"],
+    "rules": {
+        "linebreak-style": ["error", "unix"],
+        "quotes": ["error", "single"],
+        "semi": ["error", "always"],
+        // "jquery/a-rule": "error",
+        "no-console": "warn",
+        "no-plusplus": "off",
+        "no-alert": "off",
+        "camelcase": ["warn", {
+            "properties": "never"
+        }],
+        "max-len": [
+            "error",
+            {
+                "code": 120,
+                "comments": 65,
+                "ignoreComments": true,
+                "ignoreUrls": true,
+                "ignoreStrings": true,
+                "ignoreTemplateLiterals": true
+            }
+        ],
+        // "no-unused-vars": "warn",
+        "no-param-reassign": "warn",
+        "no-async-promise-executor": "warn",
+        "no-underscore-dangle": "off",
+        "brace-style": ["error", "stroustrup"],
+        "indent": ["error", 2, {
+            "VariableDeclarator": {
+                "var": 2,
+                "let": 2,
+                "const": 3
+            }
+        }],
+        "eqeqeq": ["error", "always"]
+    }
+}

@@ -1,0 +1,14 @@
+doctype html
+
+block variables
+
+html(lang="ru-RU")
+  head
+    link(rel="stylesheet", href="")
+    block styles
+    title #{title}
+  body(class={'bodyMain':main_page,
+              'bodyInner': inner_page})
+    include ../../modules/header/header
+    block content
+    include ../../modules/footer/footer

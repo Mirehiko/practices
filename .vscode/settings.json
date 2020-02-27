@@ -1,0 +1,17 @@
+{
+    "editor.formatOnSave": true,
+    "[javascript]": {
+        "editor.formatOnSave": false
+    },
+    // "eslint.autoFixOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    },
+    "prettier.disableLanguages": [
+        "js",
+        "scss"
+    ],
+    "prettier.singleQuote": true,
+    "scss.lint.important": "warning",
+    "editor.tabSize": 2,
+}

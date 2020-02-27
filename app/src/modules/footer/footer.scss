@@ -1,0 +1,20 @@
+$fcolor: #efefef;
+
+.footer {
+  font-size: 16px;
+  color: $fcolor;
+  background-color: #222;
+}
+
+.nav {
+  display: flex;
+  justify-content: center;
+}
+
+.nav-footer {
+  text-transform: uppercase;
+
+  .nav__item {
+    color: $fcolor;
+  }
+}

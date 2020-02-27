@@ -1,0 +1,31 @@
+extends layout/main
+
+block variables
+  -var title = 'Внутренняя страница'
+  -var inner_page = true
+
+block content
+  main
+    mixin link(href, title)
+      a(href= href)= title
+
+
+    mixin news(title, url)
+      .newsItem
+        .newsItem__title
+          +link(url, title)
+        .newsItem__text
+          if block
+            block
+          else
+            p Новость пустая
+
+
+    +news('Yandex', 'yandex.ru')
+    +news('Новость с каким-то текстом')
+      p lorem
+      p.
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. 
+        Corrupti excepturi ipsa possimus optio amet distinctio natus! 
+        Ullam, sint voluptatem a mollitia illum veritatis inventore 
+        vel sit deserunt laboriosam nostrum officiis!

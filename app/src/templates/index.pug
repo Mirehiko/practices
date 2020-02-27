@@ -1,0 +1,54 @@
+extends layout/main
+
+block styles
+    link(rel="stylesheet", href="/css/homepage.min.css")
+    script(src="/js/app.min.js")
+
+
+block variables
+  -var title = 'Главная страница'
+  -var main_page = true
+
+block content
+  main
+    mixin name(name)
+      li(class= 'test '+name)= name
+
+
+    mixin link(href, title)
+      a(href= href)= title
+
+
+    mixin news(title, url)
+      .newsItem
+        .newsItem__title
+          +link(url, title)
+        .newsItem__text
+          if block
+            block
+          else
+            p Новость пустая
+
+
+    mixin list(classname, ...items)
+      ul(class= 'list '+classname)
+        each item in items
+          li.list__item= item
+
+
+
+    ul
+      +name('name1')
+      +name('name2')
+      +name('name3')
+
+    +news('Yandex', 'yandex.ru')
+    +news('Новость с каким-то текстом')
+      p lorem
+      p.
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. 
+        Corrupti excepturi ipsa possimus optio amet distinctio natus! 
+        Ullam, sint voluptatem a mollitia illum veritatis inventore 
+        vel sit deserunt laboriosam nostrum officiis!
+
+    +list(1,3,4,5,76)

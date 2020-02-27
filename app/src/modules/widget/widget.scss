@@ -1,0 +1,22 @@
+$hbgcolor: #ccc;
+$hcolor: #222;
+$bbgcolor: #fff;
+$bcolor: #222;
+
+.widget {
+  position: fixed;
+  overflow: hidden;
+  background-color: $bbgcolor;
+  border-radius: 5px;
+}
+
+.widget__head {
+  height: 30px;
+  color: $hcolor;
+  background-color: $hbgcolor;
+}
+
+.widget__body {
+  height: calc(100% - 30px);
+  overflow: auto;
+}

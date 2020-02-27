@@ -1,0 +1,8 @@
+mixin nav(link, title)
+    a(href=link).nav__item=title
+
+footer.footer
+  nav.nav.nav-footer
+    +nav('#', 'Ссылка 1')
+    +nav('#', 'Ссылка 2')
+    +nav('#', 'Ссылка 3')

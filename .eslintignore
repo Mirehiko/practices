@@ -1,0 +1,6 @@
+node_modules
+/app/build/
+/.git
+/.vscode
+index.js
+gulpfile.js
