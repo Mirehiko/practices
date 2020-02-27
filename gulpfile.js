@@ -1,6 +1,7 @@
 // Подключаем модули gulp-a
 const gulp = require('gulp');
 const browserSync = require('browser-sync').create();
+const shell = require('gulp-shell');
 
 // Общее для всех типов файлов
 const clean = require('gulp-clean'); // удаление файлов и папок
@@ -121,6 +122,7 @@ const tpls_from = [ // шаблоны для сравнения и тестов
 const config = {
   server: {
     baseDir: dest_static,
+    watchEvents: [ 'change', 'add', 'unlink', 'addDir', 'unlinkDir' ]
   },
   // tunnel: true,
   // host: 'localhost',
@@ -316,8 +318,7 @@ function watchCSS() {
 	if (watchInBrowser) {
 		browserSync.init(config);
 	}
-  const watcher = gulp.watch(routes.src.styles, buildStyles).on('change', browserSync.reload);
-  const html_watcher = gulp.watch(source_dir  + '*.html').on('change', browserSync.reload);
+  const watcher = gulp.watch(routes.src.styles, buildStyles);
   clearDeletedCSS(watcher);
 }
 
@@ -488,8 +489,7 @@ function watchJS() {
 	if (watchInBrowser) {
 		browserSync.init(config);
 	}
-  const watcher = gulp.watch(routes.src.scripts, gulp.series(makeJSFiles, buildScripts)).on('change', browserSync.reload);
-  const html_watcher = gulp.watch(source_dir  + '*.html').on('change', browserSync.reload);
+  const watcher = gulp.watch(routes.src.scripts, gulp.series(makeJSFiles, buildScripts));
   clearDeletedJS(watcher);
 }
 
@@ -583,20 +583,6 @@ function watchChanges() {
   clearDeletedJS(js_watcher_1);
 }
 
-function watchOnly() {
-	if (watchInBrowser) {
-		browserSync.init(config);
-	}
-  const css_watcher = gulp.watch(routes.src.styles).on('change', browserSync.reload);
-  // const img_watcher = gulp.watch(routes.src.images, optimizeImages);
-  const js_watcher_1 = gulp.watch(routes.src.scripts).on('change', browserSync.reload);
-  // const js_watcher_2 = gulp.watch(routes.src.scripts_tmp, buildScripts);
-  const html_watcher = gulp.watch(source_dir  + '*.html').on('change', browserSync.reload);
-
-  // clearDeletedCSS(css_watcher);
-  // clearDeletedJS(js_watcher_1);
-}
-
 // Удаление временной папки со скриптами
 function clearTmp() {
   return gulp.src(`${tmp_dir}`, { read: false, allowEmpty: true })
@@ -638,19 +624,7 @@ function clearCache() {
   }));
 }
 
-function watchOnly() {
-	if (watchInBrowser) {
-		browserSync.init(config);
-  }
-  const files = [`${dest_static}**/*`]
-  const watcher = gulp.watch(files).on('change', browserSync.reload);
 
-  // return new Promise(((resolve, reject) => {
-  //   browserSync.reload;
-  //   console.log('Cache cleared');
-  //   resolve();
-  // }));
-}
 
 
 //------------------------------------------------------------------------------
@@ -1074,13 +1048,34 @@ function homeBase() {
 }
 
 
+function buildHtml() {
+  const path = arguments[0].path || `${source_dir}**/*.pug`;
+  return gulp.src(path)
+    .pipe(shell(['npm run tpl']));
+}
 
+function browser() {
+	if (watchInBrowser) {
+		browserSync.init(config);
+  }
+  const files = [`${dest_static}**/*`,];
+  const html_watcher = gulp.watch(`${source_dir}**/*.pug`).on('change', function(file) {
+    buildHtml.call(this, {path:file});
+  });
+  const css_watcher = gulp.watch(routes.src.styles, buildStyles);
+  const js_watcher = gulp.watch(routes.src.scripts, makeJSFiles);
+  const watcher = gulp.watch(files).on('change', browserSync.reload);
+  clearDeletedCSS(css_watcher);
+  clearDeletedJS(js_watcher);
+}
 
 //------------------------------------------------------------------------------
 
+exports.buildHtml = buildHtml;
 
 // JS
 //  - main
+
 exports.makeJSFiles = makeJSFiles;
 exports.buildScripts = buildScripts;
 exports.watchJS = watchJS;
@@ -1124,7 +1119,7 @@ exports.clearSourceMaps = clearSourceMaps;
 exports.saveCache = saveCache;
 exports.clearCache = clearCache;
 exports.clearTmp = clearTmp;
-exports.watchOnly = watchOnly;
+exports.browser = browser; // reload browser on change files
 
 // Fonts
 exports.minFonts = minFonts;
@@ -1196,8 +1191,6 @@ gulp.task('watch', gulp.series(
   saveCache, watchChanges,
 ));
 
-
-gulp.task('watchonly', gulp.series(watchOnly));
 
 gulp.task('build', gulp.series(
   clearTmp, gulp.parallel(buildStyles, ['js']),
