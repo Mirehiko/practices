@@ -2,6 +2,7 @@
 const gulp = require('gulp');
 const browserSync = require('browser-sync').create();
 const shell = require('gulp-shell');
+const gulpIf = require('gulp-if');
 
 // Общее для всех типов файлов
 const clean = require('gulp-clean'); // удаление файлов и папок
@@ -226,7 +227,8 @@ const options = {
 };
 
 const isProduction = mode.production();
-
+const isDevelopment = !isProduction;
+const modeMessage = isProduction ? 'production' : 'development';
 
 //-------------------------------------------------------------------
 
@@ -251,68 +253,39 @@ function buildStyles() {
   }
   console.log(`[Build params] ${message} (source path:${sourcePath}, dest path:${buildPath}, filter:${defFilter})`);
 
-  if (isProduction) {
-    const filtered = filter(defFilter);
-    return gulp.src(sourcePath, { allowEmpty: true})
-      .pipe(cache('files_changes'))
-      .pipe(dependents())
-      .pipe(logger({
-        showChange: true,
-        before: '[production] Starting prod build css-files...',
-        after: '[production] Building prod css-files complete.',
-      })) // логируем изменяемые файлы
-      .pipe(filtered)
-      .pipe(sass())
-      .pipe(autoprefixer({
-        remove: false,
-        cascade: false,
-      }))
-      .pipe(flatten(relpath))
-      .pipe(gulp.dest(buildPath))
-      .pipe(cleanCSS({
-        compatibility: 'ie8',
-      })) // минификация css
-      .pipe(rename((src_dir) => {
-        src_dir.basename += '.min';
-      }))
-      .pipe(gulp.dest(buildPath))
-      .pipe(touch())
-      .pipe(size())
-      .pipe(browserSync.stream());
-  }
-  else {
-    return gulp.src(sourcePath, { allowEmpty: true })
-      // .pipe(stripDebug())
-      .pipe(cache('files_changes')) // Кэшируем для определения только измененных файлов
-      .pipe(dependents()) // если есть связанные файлы, то меняем и их
-      .pipe(logger({
-        showChange: true,
-        before: '[development] Starting dev build css-files...',
-        after: '[development] Building dev css-files complete.',
-      })) // логируем изменяемые файлы
-      // .pipe(filtered)
-      .pipe(sourcemaps.init())
-      .pipe(sass()) // переводим в css
-      .pipe(autoprefixer({
-        remove: false,
-        cascade: false,
-      })) // добавляем префиксы
-      .pipe(flatten(relpath)) // пишем файлы без сохранения структуры папок
-      .pipe(sourcemaps.write('./')) // sourcemap-ы для .css файлов
-      .pipe(gulp.dest(buildPath))
-      // .. далее минифицируем и добавляем sourcemap-ы для .min.css
-      .pipe(filter('**/*.css'))
-      .pipe(cleanCSS({
-        compatibility: 'ie8', // default
-      })) // минификация css
-      .pipe(rename((src_dir) => {
-        src_dir.basename += '.min'; // до расширения файла
-      }))
-      .pipe(sourcemaps.write('./'))
-      .pipe(gulp.dest(buildPath)) // выходная папка
-      .pipe(touch())
-      .pipe(browserSync.stream());
-  }
+  const filtered = filter(defFilter);
+  return gulp.src(sourcePath, { allowEmpty: true})
+    .pipe(cache('files_changes'))
+    .pipe(dependents()) // если есть связанные файлы, то меняем и их
+    .pipe(logger({// логируем изменяемые файлы
+      showChange: true,
+      before: `[${modeMessage}] Starting prod build css-files...`,
+      after: `[${modeMessage}] Building prod css-files complete.`,
+      colors: true
+    }))
+    .pipe(filtered)
+    .pipe(gulpIf(isDevelopment, sourcemaps.init()))
+    .pipe(sass()) // переводим в css
+    .pipe(autoprefixer({// добавляем префиксы
+      remove: false,
+      cascade: false,
+    }))
+    .pipe(flatten(relpath)) // пишем файлы без сохранения структуры папок
+    .pipe(gulpIf(isDevelopment, sourcemaps.write('./'))) // пишем sourcemap-ы для .css файлов
+    .pipe(gulp.dest(buildPath))
+    // .. далее минифицируем и добавляем sourcemap-ы для .min.css
+    .pipe(gulpIf(isDevelopment, filter('**/*.css')))
+    .pipe(cleanCSS({// минификация css
+      compatibility: 'ie8', // default
+    }))
+    .pipe(rename((src_dir) => {
+      src_dir.basename += '.min'; // до расширения файла
+    }))
+    .pipe(gulpIf(isDevelopment, sourcemaps.write('./'))) // пишем sourcemap-ы для .css файлов
+    .pipe(gulp.dest(buildPath)) // выходная папка
+    .pipe(touch())
+    .pipe(size())
+    .pipe(gulpIf(watchInBrowser, browserSync.stream()));
 }
 
 function watchCSS() {
@@ -491,9 +464,13 @@ function buildScripts() {
 function watchJS() {
 	if (watchInBrowser) {
 		browserSync.init(config);
-	}
-  const watcher = gulp.watch(routes.src.scripts, gulp.series(makeJSFiles, buildScripts));
-  clearDeletedJS(watcher);
+  }
+  
+  const js_watcher = gulp.watch(routes.src.scripts, makeJSFiles).on('all', makeJSFiles);
+  const js_watcher2 = gulp.watch(routes.src.scripts_tmp, buildScripts).on('all', buildScripts);
+
+  clearDeletedJS(js_watcher);
+  clearDeletedJS(js_watcher2);
 }
 
 function clearJS() {
@@ -507,7 +484,9 @@ function clearJS() {
 }
 
 function clearDeletedJS(watcher) {
-  watcher.on('unlink', (filepath) => {
+  watcher.on('unlink', function(filepath) {
+    console.log(`[filepath]${filepath}`)
+
     const filePathFromSrc = path.relative(path.resolve('src'), filepath);
 
     const file = filePathFromSrc.split('/js/')[1]; // файл
@@ -518,7 +497,6 @@ function clearDeletedJS(watcher) {
     const delfilemap = path.resolve(routes.build.scripts, `${file}.map`);
     const delfilemin = path.resolve(routes.build.scripts, `${file_name}.min.${file_ext}`);
     const delfileminmap = path.resolve(routes.build.scripts, `${file_name}.min.${file_ext}.map`);
-
 
     del.sync(delfile, { force: true });
     console.log('[File deleted] ', delfile);
@@ -535,6 +513,9 @@ function clearDeletedJS(watcher) {
     del.sync(delfileminmap, { force: true });
     console.log('[File deleted] ', delfileminmap);
   });
+}
+
+function delJSFiles() {
 }
 
 function checkJS() {
@@ -575,15 +556,21 @@ function searchDuplicates() {
 function watchChanges() {
 	if (watchInBrowser) {
 		browserSync.init(config);
-	}
-  const css_watcher = gulp.watch(routes.src.styles, buildStyles).on('change', browserSync.reload);
-  // const img_watcher = gulp.watch(routes.src.images, optimizeImages);
-  const js_watcher_1 = gulp.watch(routes.src.scripts, makeJSFiles).on('change', browserSync.reload);
-  // const js_watcher_2 = gulp.watch(routes.src.scripts_tmp, buildScripts);
-  const html_watcher = gulp.watch(source_dir  + '*.html').on('change', browserSync.reload);
+    const files = [`${dest_static}**/*`,];
+    const watcher = gulp.watch(files).on('change', browserSync.reload);
+  }
 
+  const html_watcher = gulp.watch(`${source_dir}**/*.pug`).on('change', function(file) {
+    buildHtml.call(this, {path:file});
+  });
+
+  const js_watcher = gulp.watch(routes.src.scripts, makeJSFiles);
+  const js_watcher2 = gulp.watch(routes.src.scripts_tmp, buildScripts);
+  const css_watcher = gulp.watch(routes.src.styles, buildStyles);
+  
   clearDeletedCSS(css_watcher);
-  clearDeletedJS(js_watcher_1);
+  clearDeletedJS(js_watcher);
+  clearDeletedJS(js_watcher2);
 }
 
 // Удаление временной папки со скриптами
@@ -1057,28 +1044,7 @@ function buildHtml() {
     .pipe(shell(['npm run tpl']));
 }
 
-function browser() {
-	if (watchInBrowser) {
-		browserSync.init(config);
-  }
-  const files = [`${dest_static}**/*`,];
-  const html_watcher = gulp.watch(`${source_dir}**/*.pug`).on('change', function(file) {
-    buildHtml.call(this, {path:file});
-  });
 
-  // const js_watcher = gulp.watch(routes.src.scripts).on('change', function(file){
-
-    const js_watcher = gulp.watch(routes.src.scripts, makeJSFiles);
-    const js_watcher2 = gulp.watch(routes.src.scripts_tmp, buildScripts);
-  // });
-
-  const css_watcher = gulp.watch(routes.src.styles, buildStyles);
-  // const js_watcher = gulp.watch(routes.src.scripts, makeJSFiles, buildScripts);
-  const watcher = gulp.watch(files).on('change', browserSync.reload);
-  clearDeletedCSS(css_watcher);
-  clearDeletedJS(js_watcher);
-  clearDeletedJS(js_watcher2);
-}
 
 //------------------------------------------------------------------------------
 
@@ -1125,12 +1091,11 @@ exports.clearImages = clearImages;
 
 
 // All
-exports.watchChanges = watchChanges;
+exports.watchChanges = watchChanges; // reload browser on change files
 exports.clearSourceMaps = clearSourceMaps;
 exports.saveCache = saveCache;
 exports.clearCache = clearCache;
 exports.clearTmp = clearTmp;
-exports.browser = browser; // reload browser on change files
 
 // Fonts
 exports.minFonts = minFonts;
@@ -1191,24 +1156,12 @@ gulp.task('dep', gulp.series(['get_plugs'], copyLibs, ['cutcss']));
 gulp.task('removeCSSLib', removeCSSLib);
 gulp.task('clearCompres', clearCompres);
 
-
 gulp.task('default', gulp.series(
   clearTmp, gulp.parallel(buildStyles, ['js']), saveCache,
   // clearTmp, gulp.parallel(buildStyles, optimizeImages, ['js']), saveCache
 ));
-gulp.task('watch', gulp.series(
-  clearTmp, gulp.parallel(buildStyles, ['js']),
-  // clearTmp, gulp.parallel(buildStyles, optimizeImages, ['js']),
-  saveCache, watchChanges,
-));
 
 
-gulp.task('build', gulp.series(
-  clearTmp, gulp.parallel(buildStyles, ['js']),
-  // clearTmp, gulp.parallel(buildStyles, optimizeImages, ['js']),
-  // gulp.parallel(['root'], ['get_plugs'], copyLibs),
-  gulp.parallel(clearSourceMaps, clearCache, clearTmp),
-));
 
 
 // Tests
@@ -1217,22 +1170,17 @@ gulp.task('js-check', checkJS);
 gulp.task('js-quality', qualityJS);
 gulp.task('js-searchDuplicates', searchDuplicates);
 
+// Build
+gulp.task('build', gulp.series(
+  clearTmp, gulp.parallel(buildStyles, ['js']),
+  // clearTmp, gulp.parallel(buildStyles, optimizeImages, ['js']),
+  // gulp.parallel(['root'], ['get_plugs'], copyLibs),
+  gulp.parallel(clearSourceMaps, clearCache),
+  // gulp.parallel(clearSourceMaps, clearCache, clearTmp),
+));
 
-// function mytask() {
-//   return new Promise(((resolve, reject) => {
-//     console.log(process.argv);
-//     console.log(su)
-//     resolve();
-//   }));
-// }
-// exports.mytask = mytask;
-
-// gulp.task('pre-build', gulp.series(
-//  gulp.parallel(stylesProd, optimizeImages, makeJSFiles),
-//  buildJSForUncss));
-//
-// gulp.task('build-min', gulp.series(
-//  // unusedHome, homeBase, unusedHeader, unusedBase, unusedBaseLeft,/*removeCSSLib, /*  /*unusedAuthor, unusedAuthors,*/
-//  gulp.parallel(unusedHome, unusedHeader, unusedBase, unusedBaseLeft),
-//  makeJSFiles, buildJSFilesProd,
-//  gulp.parallel(clearSourceMaps, clearCache, clearTmp)));
+// Watch changes and rebuild files
+gulp.task('watch', gulp.series(
+  clearTmp, gulp.parallel(buildStyles, ['js']),
+  saveCache, watchChanges
+));

@@ -14,7 +14,7 @@
     "wpb-build-dev": "webpack --config development-config.js",
     "wpb-build-prod": "webpack --config production-config.js",
     "wbp-watch": "webpack --config webpack.config.js --watch",
-    "watch": "npm run tpl && gulp browser",
+    "watch": "npm run tpl && gulp watch",
     "toes5": "babel ./app/src/ --out-dir ./app/dist",
     "build": "npm run tpl && gulp build"
   },
@@ -81,6 +81,7 @@
     "gulp-filter": "^6.0.0",
     "gulp-flatten": "^0.4.0",
     "gulp-gzip": "^1.4.2",
+    "gulp-if": "^3.0.0",
     "gulp-imagemin": "^6.0.0",
     "gulp-include": "^2.4.1",
     "gulp-jscpd": "0.0.8",
