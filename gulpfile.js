@@ -6,7 +6,7 @@ const gulpIf = require('gulp-if');
 
 // Общее для всех типов файлов
 const clean = require('gulp-clean'); // удаление файлов и папок
-const cleanBuild = require('gulp-dest-clean'); // удаление файлов в папке назначения если их нет в исходниках
+// const cleanBuild = require('gulp-dest-clean'); // удаление файлов в папке назначения если их нет в исходниках
 const cache = require('gulp-cached'); // кэширование файлов
 const rename = require('gulp-rename'); // переименование файла
 const sourcemaps = require('gulp-sourcemaps');
@@ -143,9 +143,7 @@ const routes = {
   },
   src: {
     styles: [`${src_static}**/*.scss`, `${src_static}**/*.sass`],
-    // scripts: [`${src_static}**/*.js`, `${tmp_dir}/**/*.js`],
     scripts: [`${src_static}**/*.js`, `!${tmp_dir}/**/*.js`],
-    // scripts:     `${ src_static }js/**/*.js`,
     scripts_tmp: `${tmp_dir}/js/**/*.js`,
     images: `${src_static}images/**/*`,
     code: [`${src_static}code/**/*.scss`, `${src_static}code/**/*.sass`],
@@ -233,9 +231,18 @@ const modeMessage = isProduction ? 'production' : 'development';
 //-------------------------------------------------------------------
 
 
+
+// HTML =============================================================
+function buildHtml() {
+  const path = arguments[0].path || `${source_dir}**/*.pug`;
+  return gulp.src(path)
+    .pipe(shell(['npm run tpl']));
+}
+
+
 // CSS ==============================================================
 
-
+// Build css files
 function buildStyles() {
   let params = process.argv.splice(4);
   let sourcePath = routes.src.styles;
@@ -356,7 +363,6 @@ function makeJSFiles() {
   const filtered = filter([`${src_static}js/**/*.js`]);
   
   return gulp.src(routes.src.scripts, { allowEmpty: true })
-  // return gulp.src([`${src_static}**/*.js`], { allowEmpty: true })
     .pipe(filtered)
     .pipe(logger({
       showChange: true,
@@ -371,68 +377,46 @@ function makeJSFiles() {
 // Таск на дальнейшую обработку js-файлов
 function buildScripts() {
   const filtered = filter([`${tmp_dir}/**/*.js`, `!${tmp_dir}/**/_*.js`]);
-  if (isProduction) {
-    return gulp.src(`${tmp_dir}/**/*.js`, { allowEmpty: true, read: true })
-      .pipe(filtered)
-      .pipe(cache('files_changes'))
-      .pipe(plumber())
-      .pipe(logger({
-        showChange: true,
-        before: '[production] Starting build js-files...',
-        after: '[production] Building js-files complete',
-      }))
-      .pipe(cleanBuild(routes.build.scripts, '**'))
-      .pipe(babel({
-        presets: [
-          ['@babel/env', { modules: false }],
-        ],
-      }))
-      .pipe(flatten())
-      .pipe(gulp.dest(routes.build.scripts))
-      .pipe(minify({
-        ext: {
-          src: '.js',
-          min: '.min.js',
-        },
-      })) // минификация js
-      // .pipe(uglify({
-      //  // toplevel: true, // максимальный уровень минификации
-      // })) // минификация js
-      // .pipe(rename(function (path) {
-      //  path.basename += ".min";//до расширения файла
-      // }))
-      .pipe(gulp.dest(routes.build.scripts)) // выходная папка
-      .pipe(touch())
-      .pipe(size())
-      .pipe(browserSync.stream());
-  }
-
   return gulp.src([routes.src.scripts_tmp], { allowEmpty: true, read: true })
     .pipe(cache('files_changes'))
     .pipe(plumber())
     .pipe(logger({
       showChange: true,
-      before: '[development] Starting build js-files...',
-      after: '[development] Building js-files complete',
+      before: `[${modeMessage}] Starting build js-files...`,
+      after: `[${modeMessage}] Building js-files complete`,
     }))
+    // .pipe(cleanBuild(routes.build.scripts))
     .pipe(filtered)
-    .pipe(sourcemaps.init({ loadMaps: true }))
+    .pipe(gulpIf(isDevelopment, sourcemaps.init({ loadMaps: true })))
     .pipe(babel({
       presets: [
         ['@babel/env', { modules: false }],
       ],
     }))
-    .pipe(sourcemaps.write('.'))
+    .pipe(gulpIf(isProduction, flatten()))
+    .pipe(gulpIf(isDevelopment, sourcemaps.write('./'))) // пишем sourcemap-ы для .js файлов
     .pipe(gulp.dest(routes.build.scripts))
-    .pipe(filter('**/*.js'))
-    .pipe(rename((path) => {
+    .pipe(gulpIf(isDevelopment, filter('**/*.js')))
+    .pipe(gulpIf(isDevelopment, rename((path) => { // минификация js dev
       path.basename += '.min';// до расширения файла
-    }))
-    .pipe(sourcemaps.write('.'))
+    })))
+    .pipe(gulpIf(isProduction, minify({ // минификация js prod
+      ext: {
+        src: '.js',
+        min: '.min.js',
+      },
+    })))
+    // .pipe(uglify({
+    //  // toplevel: true, // максимальный уровень минификации
+    // })) // минификация js
+    // .pipe(rename(function (path) {
+    //  path.basename += ".min";//до расширения файла
+    // }))
+    .pipe(gulpIf(isDevelopment, sourcemaps.write('./'))) // пишем sourcemap-ы для .js файлов
     .pipe(gulp.dest(routes.build.scripts)) // выходная папка
     .pipe(touch())
     .pipe(size())
-    .pipe(browserSync.stream());
+    .pipe(gulpIf(watchInBrowser, browserSync.stream()));
 }
 
 // function buildJSForUncss() {
@@ -513,9 +497,6 @@ function clearDeletedJS(watcher) {
     del.sync(delfileminmap, { force: true });
     console.log('[File deleted] ', delfileminmap);
   });
-}
-
-function delJSFiles() {
 }
 
 function checkJS() {
@@ -1038,13 +1019,16 @@ function homeBase() {
 }
 
 
-function buildHtml() {
-  const path = arguments[0].path || `${source_dir}**/*.pug`;
-  return gulp.src(path)
-    .pipe(shell(['npm run tpl']));
+
+function delUnexistFromBuild() {
+  return gulp.src([`${dest_static}**/*.map`], { read: false, allowEmpty: true })
+    .pipe(logger({
+      showChange: true,
+      before: 'Starting delete sourcemaps...',
+      after: 'Sourcemaps deleted.',
+    }))
+    .pipe(clean({ force: true }));
 }
-
-
 
 //------------------------------------------------------------------------------
 
@@ -1156,10 +1140,7 @@ gulp.task('dep', gulp.series(['get_plugs'], copyLibs, ['cutcss']));
 gulp.task('removeCSSLib', removeCSSLib);
 gulp.task('clearCompres', clearCompres);
 
-gulp.task('default', gulp.series(
-  clearTmp, gulp.parallel(buildStyles, ['js']), saveCache,
-  // clearTmp, gulp.parallel(buildStyles, optimizeImages, ['js']), saveCache
-));
+
 
 
 
@@ -1170,13 +1151,18 @@ gulp.task('js-check', checkJS);
 gulp.task('js-quality', qualityJS);
 gulp.task('js-searchDuplicates', searchDuplicates);
 
+// Default
+gulp.task('default', gulp.series(
+  clearTmp, gulp.parallel(buildStyles, ['js']),
+  gulp.parallel(clearSourceMaps, clearCache, clearTmp),
+));
+
 // Build
 gulp.task('build', gulp.series(
   clearTmp, gulp.parallel(buildStyles, ['js']),
   // clearTmp, gulp.parallel(buildStyles, optimizeImages, ['js']),
   // gulp.parallel(['root'], ['get_plugs'], copyLibs),
-  gulp.parallel(clearSourceMaps, clearCache),
-  // gulp.parallel(clearSourceMaps, clearCache, clearTmp),
+  gulp.parallel(clearSourceMaps, clearCache, clearTmp),
 ));
 
 // Watch changes and rebuild files
